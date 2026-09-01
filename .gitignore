@@ -47,5 +47,16 @@ qtcreator-*
 # Emacs
 .#*
 
+
+build/
+install/
+log/
+
+__pycache__/
+*.pyc
+
+.vscode/
+.idea/
+
 # Catkin custom files
 CATKIN_IGNORE
