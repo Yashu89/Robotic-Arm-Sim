@@ -114,6 +114,17 @@ ros2 launch robotic_arm pickup.launch.py
 
 ---
 
+## Limitations
+
+- The project is currently designed and tested in a simulated Gazebo environment.
+- The maximum object size that can be reliably grasped depends on the gripper opening and positioning accuracy.
+- Objects close to the maximum gripper opening may not be reliably grasped due to positioning and centering errors.
+- Object height is limited by the robotic arm's reachable workspace and possible collision constraints.
+- The basket/drop location is predefined.
+- The system has primarily been tested with a specific object shape and size.
+
+---
+
 ## Future Improvements
 
 Possible future improvements include:
