@@ -47,7 +47,6 @@ class SearchDetector(Node):
         self.fallback_dist = 0.35
 
         self.arm_busy = False
-        self._prev_arm_busy = False
 
         self.search_timer = self.create_timer(0.2, self.search_callback)
 
