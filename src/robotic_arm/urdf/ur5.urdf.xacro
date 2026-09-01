@@ -1,0 +1,704 @@
+<?xml version="1.0" ?>
+<robot name="ur5" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- common stuff -->
+  <!-- ur5 -->
+  <!-- Inertia parameters -->
+  <!-- This mass might be incorrect -->
+  <!-- Kinematic model -->
+  <!-- Properties from urcontrol.conf -->
+  <!--
+    DH for UR5:
+    a = [0.00000, -0.42500, -0.39225,  0.00000,  0.00000,  0.0000]
+    d = [0.089159,  0.00000,  0.00000,  0.10915,  0.09465,  0.0823]
+    alpha = [ 1.570796327, 0, 0, 1.570796327, -1.570796327, 0 ]
+    q_home_offset = [0, -1.570796327, 0, -1.570796327, 0, 0]
+    joint_direction = [-1, -1, 1, 1, 1, 1]
+    mass = [3.7000, 8.3930, 2.2750, 1.2190, 1.2190, 0.1879]
+    center_of_mass = [ [0, -0.02561, 0.00193], [0.2125, 0, 0.11336], [0.11993, 0.0, 0.0265], [0, -0.0018, 0.01634], [0, 0.0018,0.01634], [0, 0, -0.001159] ]
+  -->
+  <!-- Arbitrary offsets for shoulder/elbow joints -->
+  <!-- measured from model -->
+  <!-- measured from model -->
+  <!-- link lengths used in model -->
+  <!--property name="shoulder_height" value="0.089159" /-->
+  <!--property name="shoulder_offset" value="0.13585" /-->
+  <!-- shoulder_offset - elbow_offset + wrist_1_length = 0.10915 -->
+  <!--property name="upper_arm_length" value="0.42500" /-->
+  <!--property name="elbow_offset" value="0.1197" /-->
+  <!-- CAD measured -->
+  <!--property name="forearm_length" value="0.39225" /-->
+  <!--property name="wrist_1_length" value="0.093" /-->
+  <!-- CAD measured -->
+  <!--property name="wrist_2_length" value="0.09465" /-->
+  <!-- In CAD this distance is 0.930, but in the spec it is 0.09465 -->
+  <!--property name="wrist_3_length" value="0.0823" /-->
+  <!-- manually measured -->
+  <!-- manually measured -->
+  <!-- manually measured -->
+  <!-- manually measured -->
+  <!-- manually measured -->
+  <!-- arm -->
+
+  <!-- base-->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://robotic_arm/meshes/ur5/visual/base.dae"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://robotic_arm/meshes/ur5/collision/base.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="4.0"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <inertia ixx="0.00443333156" ixy="0.0" ixz="0.0" iyy="0.00443333156" iyz="0.0" izz="0.0072"/>
+    </inertial>
+  </link>
+
+  <!-- 360 degree cam-->
+  <joint name="search_cam_joint" type = "revolute">
+    <parent link="base_link"/>
+    <child link="search_cam_arm"/>
+    <origin xyz="0 0 0.005" rpy="0 0 0"/>
+    <axis xyz = "0 0 1"/>
+    <limit
+      lower = "-3.14159265"
+      upper="3.14159265"
+      effort="20"
+      velocity="1.0"/>
+  </joint>
+
+  <!-- rigid arm with radius -->
+  <link name="search_cam_arm">
+    <visual>
+      <geometry>
+        <box size="0.005 0.015 0.015"/>
+      </geometry>
+      <origin xyz="0.08 0 0" rpy = "0 0 0"/>
+      <material name="SearchCamArm">
+        <color rgba="0.2 0.2 0.2 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.005 0.015 0.015"/>
+      </geometry>
+      <origin xyz="0.08 0 0" rpy = "0 0 0"/>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.1"/>
+      <inertia
+        ixx="0.000002"
+        ixy="0"
+        ixz="0"
+        iyy="0.00075"
+        iyz="0"
+        izz="0.00075"/>
+    </inertial>
+  </link>
+
+  <!-- Cam at circumference -->
+  <link name = "search_cam_link">
+    <visual>
+      <geometry>
+        <box size="0.005 0.015 0.015"/>
+      </geometry>
+      <origin xyz = "0 0 0" rpy="0 0 0"/>
+      <material name="SearchCam">
+        <color rgba="0.1 0.1 0.1 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.005 0.015 0.015"/>
+      </geometry>
+      <origin xyz = "0 0 0" rpy="0 0 0"/>
+    </collision>
+  </link>
+
+  <joint name="search_cam_mount_joint" type="fixed">
+    <parent link="search_cam_arm"/>
+    <child link="search_cam_link"/>
+    <origin xyz="0.087 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- 1D LiDAR -->
+  <link name="search_lidar_link">
+    <visual>
+      <geometry>
+        <box size="0.004 0.01 0.01"/>
+      </geometry>
+      <material name="LidarColor">
+        <color rgba="0.1 0.8 0.1 1.0"/>
+      </material>
+    </visual>
+
+    <collision>
+      <geometry>
+        <box size="0.004 0.01 0.01"/>
+      </geometry>
+    </collision>
+
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0"
+               iyy="0.00001" iyz="0"
+               izz="0.00001"/>
+    </inertial>
+  </link>
+
+  <!-- Attach LiDAR to rotating camera arm -->
+  <joint name="search_lidar_mount_joint" type="fixed">
+    <parent link="search_cam_arm"/>
+    <child link="search_lidar_link"/>
+    <!-- Same end region as search camera -->
+    <origin xyz="0.087 0 -0.0145" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="base_joint" type="revolute">
+    <parent link="base_link"/>
+    <child link="shoulder_link"/>
+    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.089159"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="150.0" lower="-3.14159265" upper="3.14159265" velocity="3.15"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <!-- shoulder-->
+  <link name="shoulder_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://robotic_arm/meshes/ur5/visual/shoulder.dae"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://robotic_arm/meshes/ur5/collision/shoulder.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="3.7"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <inertia ixx="0.010267495893" ixy="0.0" ixz="0.0" iyy="0.010267495893" iyz="0.0" izz="0.00666"/>
+    </inertial>
+  </link>
+  <joint name="shoulder_joint" type="revolute">
+    <parent link="shoulder_link"/>
+    <child link="upper_arm_link"/>
+    <origin rpy="0.0 1.570796325 0.0" xyz="0.0 0.13585 0.0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="150.0" lower="-3.14159265" upper="2.0" velocity="3.15"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <!-- Upper Arm-->
+  <link name="upper_arm_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://robotic_arm/meshes/ur5/visual/upperarm.dae"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://robotic_arm/meshes/ur5/collision/upperarm.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="8.393"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.28"/>
+      <inertia ixx="0.22689067591" ixy="0.0" ixz="0.0" iyy="0.22689067591" iyz="0.0" izz="0.0151074"/>
+    </inertial>
+  </link>
+  <joint name="elbow_joint" type="revolute">
+    <parent link="upper_arm_link"/>
+    <child link="forearm_link"/>
+    <origin rpy="0.0 0.0 0.0" xyz="0.0 -0.1197 0.425"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="150.0" lower="-3.14159265" upper="3.14159265" velocity="3.15"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <!-- Fore Arm-->
+  <link name="forearm_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://robotic_arm/meshes/ur5/visual/forearm.dae"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://robotic_arm/meshes/ur5/collision/forearm.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.275"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.25"/>
+      <inertia ixx="0.049443313556" ixy="0.0" ixz="0.0" iyy="0.049443313556" iyz="0.0" izz="0.004095"/>
+    </inertial>
+  </link>
+  <joint name="wrist_1_joint" type="revolute">
+    <parent link="forearm_link"/>
+    <child link="wrist_1_link"/>
+    <origin rpy="0.0 1.570796325 0.0" xyz="0.0 0.0 0.39225"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="28.0" lower="-3.14159265" upper="3.14159265" velocity="3.2"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <!-- wrist 1 -->
+  <link name="wrist_1_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://robotic_arm/meshes/ur5/visual/wrist1.dae"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://robotic_arm/meshes/ur5/collision/wrist1.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.219"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <inertia ixx="0.111172755531" ixy="0.0" ixz="0.0" iyy="0.111172755531" iyz="0.0" izz="0.21942"/>
+    </inertial>
+  </link>
+  <joint name="wrist_2_joint" type="revolute">
+    <parent link="wrist_1_link"/>
+    <child link="wrist_2_link"/>
+    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.093 0.0"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="28.0" lower="-3.14159265" upper="3.14159265" velocity="3.2"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <!-- wrist 2-->
+  <link name="wrist_2_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://robotic_arm/meshes/ur5/visual/wrist2.dae"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://robotic_arm/meshes/ur5/collision/wrist2.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.219"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <inertia ixx="0.111172755531" ixy="0.0" ixz="0.0" iyy="0.111172755531" iyz="0.0" izz="0.21942"/>
+    </inertial>
+  </link>
+  <joint name="wrist_3_joint" type="revolute">
+    <parent link="wrist_2_link"/>
+    <child link="wrist_3_link"/>
+    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.09465"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="28.0" lower="-3.14159265" upper="3.14159265" velocity="3.2"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <!-- wrist 3-->
+  <link name="wrist_3_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://robotic_arm/meshes/ur5/visual/wrist3.dae"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://robotic_arm/meshes/ur5/collision/wrist3.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1879"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <inertia ixx="0.0171364731454" ixy="0.0" ixz="0.0" iyy="0.0171364731454" iyz="0.0" izz="0.033822"/>
+    </inertial>
+  </link>
+  <joint name="ee_fixed_joint" type="fixed">
+    <parent link="wrist_3_link"/>
+    <child link="ee_link"/>
+    <origin rpy="0.0 0.0 1.570796325" xyz="0.0 0.0823 0.0"/>
+  </joint>
+
+  <!-- ee -->
+  <link name="ee_link">
+    <collision>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="-0.01 0 0"/>
+    </collision>
+  </link>
+  <!-- nothing to do here at the moment -->
+  <!-- ROS base_link to UR 'Base' Coordinates transform -->
+  <link name="base"/>
+  <joint name="base_link-base_fixed_joint" type="fixed">
+    <!-- NOTE: this rotation is only needed as long as base_link itself is
+                 not corrected wrt the real robot (ie: rotated over 180
+                 degrees)
+      -->
+    <origin rpy="0 0 -3.14159265" xyz="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="base"/>
+  </joint>
+  <!-- Frame coincident with all-zeros TCP on UR controller -->
+   <!-- tool 0-->
+  <link name="tool0">
+    <visual>
+      <geometry>
+	<box size="0.085 0.02 0.005" />
+      </geometry>
+      <origin xyz="0 0 0.01" />
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+	<box size="0.085 0.02 0.005" />
+      </geometry>
+      <origin xyz="0 0 0.01" />
+    </collision>
+  </link>
+
+  <joint name="wrist_3_link-tool0_fixed_joint" type="fixed">
+    <origin rpy="-1.570796325 0 0" xyz="0 0.0823 0"/>
+    <parent link="wrist_3_link"/>
+    <child link="tool0"/>
+  </joint>
+
+  <!-- Left Finger -->
+  <link name = "left_finger">
+    <visual>
+      <geometry>
+        <box size="0.005 0.02 0.05"/>
+      </geometry>
+      <origin xyz = "0 0 0.03" rpy = "0 0 0"/>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.005 0.02 0.05"/>
+      </geometry>
+      <origin xyz = "0 0 0.03" rpy = "0 0 0"/>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0.03" rpy="0 0 0"/>
+      <mass value="0.05"/>
+      <inertia
+        ixx = "0.00002"
+        ixy = "0.0"
+        ixz = "0.0"
+        iyy = "0.00002"
+        iyz = "0.0"
+        izz = "0.00001"/>
+    </inertial>
+  </link>
+
+  <joint name="left_finger_joint" type = "prismatic">
+    <parent link="tool0"/>
+    <child link = "left_finger"/>
+    <origin xyz = "0.04 0 0" rpy = "0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit
+      lower="-0.025"
+      upper="0.005"
+      effort="50"
+      velocity = "0.1"/>
+    <dynamics
+      damping = "0.05"
+      friction = "0.01"/>
+  </joint>
+
+  <!-- Right Finger -->
+   <link name = "right_finger">
+    <visual>
+      <geometry>
+        <box size="0.005 0.02 0.05"/>
+      </geometry>
+      <origin xyz = "0 0 0.03" rpy = "0 0 0"/>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.005 0.02 0.05"/>
+      </geometry>
+      <origin xyz = "0 0 0.03" rpy = "0 0 0"/>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0.03" rpy="0 0 0"/>
+      <mass value="0.05"/>
+      <inertia
+        ixx = "0.00002"
+        ixy = "0.0"
+        ixz = "0.0"
+        iyy = "0.00002"
+        iyz = "0.0"
+        izz = "0.00001"/>
+    </inertial>
+  </link>
+
+  <joint name="right_finger_joint" type = "prismatic">
+    <parent link="tool0"/>
+    <child link = "right_finger"/>
+    <origin xyz = "-0.04 0 0" rpy = "0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit
+      lower="-0.005"
+      upper="0.025"
+      effort="50"
+      velocity = "0.1"/>
+    <dynamics
+      damping = "0.05"
+      friction = "0.01"/>
+  </joint>
+
+
+  <link name="world"/>
+  <joint name="world_joint" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+  </joint>
+
+
+  <ros2_control name = "GazeboSystem" type = "system">
+    <hardware>
+        <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+    </hardware>
+
+    <joint name="base_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+    </joint>
+
+    <joint name="shoulder_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+    </joint>
+
+    <joint name="elbow_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+    </joint>
+
+    <joint name="wrist_1_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+    </joint>
+
+    <joint name="wrist_2_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+    </joint>
+
+    <joint name="wrist_3_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+    </joint>
+
+    <!-- gripper -->
+    <joint name="left_finger_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+    </joint>
+
+    <joint name="right_finger_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+    </joint>
+
+    <joint name="search_cam_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+    </joint>
+    
+  </ros2_control>
+
+  <gazebo>
+    <plugin 
+        filename="gz_ros2_control-system"
+        name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find robotic_arm)/config/controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
+
+  <link name="wrist_cam_link">
+    <visual>
+      <geometry>
+        <box size = "0.005 0.01 0.01"/>
+      </geometry>
+      <origin xyz = "0 0 0" rpy = "0 0 0"/>
+      <material name="CameraBody">
+        <color rgba = "0.15 0.15 0.15 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size = "0.005 0.01 0.01"/>
+      </geometry>
+      <origin xyz = "0 0 0" rpy = "0 0 0"/>
+    </collision>
+    <inertial>
+      <origin xyz = "0 0 0" rpy="0 0 0"/>
+      <mass value = "0.05"/>
+      <inertia
+        ixx = "0.00001"
+        ixy = "0.0"
+        ixz = "0.0"
+        iyy = "0.00001"
+        iyz = "0.0"
+        izz = "0.00001"/>
+    </inertial>
+  </link>
+
+  <joint name = "wrist_cam_joint" type = "fixed">
+    <parent link="tool0"/>
+    <child link="wrist_cam_link"/>
+    <origin xyz = "0 0 0.005" rpy = "-1.5708 -1.5708 0"/>
+  </joint>
+  
+  <link name="cam_optical_frame"/>
+  <joint name="cam_optical_joint" type = "fixed">
+    <parent link="wrist_cam_link"/>
+    <child link="cam_optical_frame"/>
+    <origin xyz = "0 0 0" rpy = "-1.5708 0 -1.5708"/>
+  </joint>
+
+  <gazebo reference="wrist_cam_link">
+    <sensor name="wrist_camera" type = "camera">
+      <always_on>true</always_on>
+      <update_rate>30</update_rate>
+      <visualize>true</visualize>
+
+      <camera>
+        <horizontal_fov>1.0472</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+
+        <clip>
+          <near>0.05</near>
+          <far>10.0</far>
+        </clip>
+      </camera>
+      <topic>/wrist_cam/image_raw</topic>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="search_cam_link">
+    <sensor name="search_camera" type = "camera">
+      <always_on>true</always_on>
+      <update_rate>30</update_rate>
+      <visualize>true</visualize>
+
+      <camera>
+        <horizontal_fov>1.0472</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+
+        <clip>
+          <near>0.05</near>
+          <far>10.0</far>
+        </clip>
+      </camera>
+      <topic>/search_cam/image_raw</topic>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="search_lidar_link">
+    <sensor name="search_lidar" type="gpu_lidar">
+
+      <always_on>true</always_on>
+      <update_rate>10</update_rate>
+      <visualize>true</visualize>
+
+      <topic>/search_lidar/scan</topic>
+
+      <gz_frame_id>search_lidar_link</gz_frame_id>
+
+      <lidar>
+        <scan>
+          <horizontal>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </horizontal>
+
+          <vertical>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+        </scan>
+
+        <range>
+          <min>0.05</min>
+          <max>3.0</max>
+          <resolution>0.01</resolution>
+        </range>
+
+      </lidar>
+
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="left_finger">
+    <mu1>2.0</mu1>
+    <mu2>2.0</mu2>
+  </gazebo>
+
+  <gazebo reference="right_finger">
+    <mu1>2.0</mu1>
+    <mu2>2.0</mu2>
+  </gazebo>
+
+</robot>
