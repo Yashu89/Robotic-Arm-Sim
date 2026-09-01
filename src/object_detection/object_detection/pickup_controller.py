@@ -76,7 +76,6 @@ class PickupController(Node):
 
         self.end_effector_link = 'tool0'
         self.wrist_precheck_timeout = 5.0
-        self.wrist_xy_gain = 0.0001
 
         self._publish_busy(False)
         self.get_logger().info('Pickup Controller ready!')
