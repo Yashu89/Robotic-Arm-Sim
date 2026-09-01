@@ -81,6 +81,7 @@ The system follows a perception-to-manipulation pipeline:
 
 ```bash
 git clone https://github.com/yashu8919/Robotic-Arm-Sim.git
+cd Robotic-Arm-Sim
 
 # Build
 colcon build
